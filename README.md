@@ -1,4 +1,4 @@
-# zauktion
+#Whirl Auction
 
 Parties:
 -------
@@ -7,7 +7,7 @@ Parties:
 
 Contracts:
 ----------
-- Auction Contract functions:
+- Auction Contract (WhirlAuction) functions:
     - auction(leaf(auction_info))
     - bid(proof(secret(bidder), siblings[9]), nullifier_hash[9], leaf(hash(secret(seller), collect_sum)))
         * set pause_info
@@ -22,7 +22,7 @@ Contracts:
             + require(check(proof(secret(seller), current_price, leaf_with_siblings(hash(secret(seller), current_price), false))))
         * unset pause_info
             +unset is_paused
-- Cash Contract functions (with denomination d(e.g 100, 10, 1, 0.1)):
+- Cash Contract (HongtaiCash) functions (with denomination d(e.g 100, 10, 1, 0.1)):
     * deposit(leaf(hash(secret(user)), 1))
     * withdraw(proof(secret(user), siblings), nullifier_hash, recipient)
     * collect(proof(secret(user), siblings[9]), nullifier_hash[9], leaf(hash(secret(user)), collect_sum))
