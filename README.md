@@ -39,9 +39,10 @@ Workflow:
     - pause time
     - price delta
     - time delta
-2) seller --call--> auction(leaf(auction_info))
-3) Bidder --call--> bid before price goes to zero
-4) Seller:
+2) Seller convince bidders that the onchain commitment is correct by interactive zero-knowledge proof protocol
+3) seller --call--> auction(leaf(auction_info))
+4) Bidder --call--> bid before price goes to zero
+5) Seller:
     1) slash within pausiing period, auction restart
     2) auction end after pausing period
-5) auction ended, bidder is authorised to receive token
+6) auction ended, bidder is authorised to receive token
