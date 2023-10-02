@@ -13,6 +13,7 @@ abstract contract HungTie is Tornado {
   function enough(
     bytes calldata _proof,
     bytes32 _root,
-    bytes32 _commitment
+    bytes32 _commitment,
+    bytes32 _priceHash
   ) external pure nonReentrant virtual;
 }
