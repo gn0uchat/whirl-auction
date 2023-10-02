@@ -41,7 +41,7 @@ Workflow:
     - time delta
 2) Seller convince bidders that the onchain commitment is correct by interactive zero-knowledge proof protocol
 3) seller --call--> auction(leaf(auction_info))
-4) Bidder --call--> bid before price goes to zero
+4) Bidder --call--> bid before price goes to zero (collect cash leaf to one leaf and put Hash(secret(seller)) into that leaf)
 5) Seller:
     1) slash within pausiing period, auction restart
     2) auction end after pausing period
