@@ -1,7 +1,7 @@
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./HungTie.sol"
 
-abstract contract HungTie is ReentrancyGuard {
+abstract contract Whirl is ReentrancyGuard {
 
     struct Auction {
         bool isBid
