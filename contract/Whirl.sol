@@ -4,8 +4,9 @@ import "./HungTie.sol"
 abstract contract Whirl is ReentrancyGuard {
 
     struct Auction {
-        bool hashBid
-        Bid latestBid
+        bool hasBid
+        bytes32 commitment
+        Bid bid
     }
 
     struct Bid {
@@ -13,17 +14,9 @@ abstract contract Whirl is ReentrancyGuard {
         bytes32 priceCommitment
     }
 
-    struct CollectPayload {
-        bytes _proof,
-        bytes32 _root,
-        bytes32[16] _nullifierHash,
-        bytes32 _commitment
-    }
-
     struct EnoughPayload {
-        bytes _proof,
-        bytes32 _root,
-        bytes32 _thresholdCommitment,
+        bytes proof
+        bytes32 root
     }
 
     event Auction(bytes32 indexed commitment, bytes32 id, uint256 timestamp);
@@ -35,18 +28,24 @@ abstract contract Whirl is ReentrancyGuard {
     ) external nonReentrant virtual;
 
     function bid(
-        bytes32 _auctionID,
-        bytes32 _priceCommitment,
-        CollectPayload _payment
+        bytes32 _id,
+        bytes calldata _proof,
+        bytes32 _root,
+        bytes32 _commitment
     ) external payable nonReentrant virtual;
+    // calls own.verify(_proof, _root, _commitment, _auctions[_id].secretCommitment);
 
     function slash(
-        bytes32 _auctionID,
+        bytes32 _id,
+        bytes calldata _proof,
+        bytes32 priceCommitment
         EnoughPayload _enough
     ) external nonReentrant virtual;
+    // calls price.verify(_proof, _auction[_id].commitment, priceCommitment);
+    // calls enough.verify(_enough.proof, _enough.root, _auction[_id].bid.paymentCommitment, priceCommitment, false);
 
     function withdraw(
-        bytes32 _auctionID,
+        bytes32 _id,
         bytes   calldata _proof,
         address payable _recipient,
         address payable _relayer,

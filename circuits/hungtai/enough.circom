@@ -1,9 +1,8 @@
 include "../lib/merkleTree.circom";
 
-// leaf = hash(secret | amount)
 template enough(levels) {
     signal input root;
-    signal input commitment; // leaf = hash(isCollected | amount | secretHash)
+    signal input commitment; // leaf = hash(secret + secretHash + amount)
                              // nullifier(i) = hash(nullifier(i-1) | secret), nullifier(0) = hash(secretHash | secret)
     signal input thresholdCommitment;  // thresholdCommitment = hash(salt | threshold)
     signal input isEnough;
