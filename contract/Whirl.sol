@@ -35,6 +35,13 @@ abstract contract HungTie is ReentrancyGuard {
         bytes _commitment,
         bytes32 nullifierHash,
         CollectPayload payment
+    ) external payable nonReentrant virtual;
+
+    function collect(
+        bytes calldata _proof,
+        bytes32 _root,
+        bytes32[16] _nullifierHash,
+        bytes32 _commitment
     ) external nonReentrant virtual;
 
     function slash(
