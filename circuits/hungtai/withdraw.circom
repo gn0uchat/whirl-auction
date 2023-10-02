@@ -1,6 +1,6 @@
-include "../node_modules/circomlib/circuits/bitify.circom";
-include "../node_modules/circomlib/circuits/pedersen.circom";
-include "merkleTree.circom";
+include "../../node_modules/circomlib/circuits/bitify.circom";
+include "../../node_modules/circomlib/circuits/pedersen.circom";
+include "../lib/merkleTree.circom";
 
 // computes Pedersen(nullifier + secret)
 template CommitmentHasher() {
