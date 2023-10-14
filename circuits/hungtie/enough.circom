@@ -5,7 +5,6 @@ template enough(levels) {
     signal input commitment; // leaf = hash(secret + secretHash + amount)
                              // nullifier(i) = hash(nullifier(i-1) | secret), nullifier(0) = hash(secretHash | secret)
     signal input thresholdCommitment;  // thresholdCommitment = hash(salt | threshold)
-    signal input isEnough;
 
     signal private input secret;
     signal private input salt;

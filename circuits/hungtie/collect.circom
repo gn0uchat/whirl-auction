@@ -3,7 +3,7 @@ include "../lib/merkleTree.circom";
 template collect(levels) {
     signal input root;
     signal input nullifierHash[9];
-    signal input commitment;
+    signal input secretCommitment;
 
     signal private input nullifier;
     signal private input secret;

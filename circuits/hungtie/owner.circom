@@ -1,6 +1,6 @@
 include "../lib/merkleTree.circom";
 
-template own(levels) {
+template owner(levels) {
     signal input root;
     signal input commitment; // leaf commitment = hash(secret + secretCommitment + amount)
                              // nullifier(i) = hash(nullifier(i-1) | secret), nullifier(0) = hash(secretHash | secret)
