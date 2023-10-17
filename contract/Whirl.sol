@@ -3,53 +3,77 @@ import "./HungTie.sol"
 
 abstract contract Whirl is ReentrancyGuard {
 
-    struct Auction {
-        bool hasBid
-        bytes32 commitment
-        Bid bid
-    }
+  HungTie public hungTie;
 
-    struct Bid {
-        bytes32 paymentCommitment
-        bytes32 priceCommitment
-    }
+  struct Auction {
+      bytes32 priceCommitment
+      bytes32 speedCommitment
+      bytes32 sellerSecretCommitment
+      uint pausedDuration
+      Bid bid
+  }
 
-    struct EnoughPayload {
-        bytes proof
-        bytes32 root
-    }
+  struct Bid {
+      bytes32 paymentCommitment
+      timestamp
+      // bytes32 priceCommitment
+  }
 
-    event Auction(bytes32 indexed commitment, bytes32 id, uint256 timestamp);
+  struct EnoughPayload {
+      bytes proof
+      bytes32 root
+  }
 
-    mapping(bytes32 => Auction) public _auctions;
+  event Auction(bytes32 indexed commitment, bytes32 id, uint256 timestamp);
 
-    function auction(
-        bytes32 _commitment
-    ) external nonReentrant virtual;
+  mapping(bytes32 => Auction) public _auctions;
 
-    function bid(
-        bytes32 _id,
-        bytes calldata _proof,
-        bytes32 _root,
-        bytes32 _commitment
-    ) external payable nonReentrant virtual;
-    // calls own.verify(_proof, _root, _commitment, _auctions[_id].secretCommitment);
+  function hasBid(Auction auction) internal pure returns(bool){
+    return auction.bid != 0;
+  }
 
-    function slash(
-        bytes32 _id,
-        bytes calldata _proof,
-        bytes32 priceCommitment
-        EnoughPayload _enough
-    ) external nonReentrant virtual;
-    // calls price.verify(_proof, _auction[_id].commitment, priceCommitment);
-    // calls enough.verify(_enough.proof, _enough.root, _auction[_id].bid.paymentCommitment, priceCommitment, false);
+  function auction(
+    bytes32 _priceCommitment
+    bytes32 _speedCommitment,
+    bytes32 _sellerSecretCommitment
+  ) external nonReentrant virtual;
 
-    function withdraw(
-        bytes32 _id,
-        bytes   calldata _proof,
-        address payable _recipient,
-        address payable _relayer,
-        uint256 _fee,
-        uint256 _refund
-    ) external payable nonReentrant virtual;
+  function bid(
+    bytes32 _id,
+    bytes calldata _proof,
+    bytes32 _root,
+    bytes32 _commitment,
+    bytes32 paymentCommitment
+  ) external payable nonReentrant {
+
+    Auction auction = auctions[_id];
+
+    require(auction != 0);
+    require(! hashBid(auction));
+
+    hungTie.collect(_proof, _root, _auctions[_id].sellerSecretCommitment);
+    _auctions[_id].bid = bid;
+    _auctions[_id].timestamp = ;
+  }
+
+  function slash(
+    bytes32 _id,
+    bytes calldata _proof,
+    bytes32 priceCommitment
+    EnoughPayload _enough
+  ) external nonReentrant {
+    require(! hungTie.enough());
+    // do slash ...
+  }
+
+  function withdraw(
+    bytes32 _id,
+    bytes   calldata _proof,
+    address payable _recipient,
+    address payable _relayer,
+    uint256 _fee,
+    uint256 _refund
+  ) external payable nonReentrant {
+    // withdraw if pass time limit ...
+  }
 }
