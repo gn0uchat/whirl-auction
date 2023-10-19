@@ -1,9 +1,11 @@
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./HungTie.sol"
 
 abstract contract Whirl is ReentrancyGuard {
 
   HungTie public hungTie;
+  IERC721 internal nft;
 
   struct Auction {
       bytes32 priceCommitment
@@ -28,7 +30,13 @@ abstract contract Whirl is ReentrancyGuard {
 
   mapping(bytes32 => Auction) public _auctions;
 
-  function hasBid(Auction auction) internal pure returns(bool){
+  constructor(
+    address nftAddress
+  ) {
+    nft = IERC721(nftAddress);
+  }
+
+  function hasBid(Auction auction) internal pure returns(bool) {
     return auction.bid != 0;
   }
 
@@ -68,6 +76,7 @@ abstract contract Whirl is ReentrancyGuard {
 
   function withdraw(
     bytes32 _id,
+    uint256 nftId,
     bytes   calldata _proof,
     address payable _recipient,
     address payable _relayer,
@@ -75,5 +84,6 @@ abstract contract Whirl is ReentrancyGuard {
     uint256 _refund
   ) external payable nonReentrant {
     // withdraw if pass time limit ...
+    nft.safeTransferFrom(address(this), msg.sender, nftId);
   }
 }
