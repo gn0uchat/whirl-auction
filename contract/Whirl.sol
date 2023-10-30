@@ -1,29 +1,32 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
+
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "./HungTie.sol"
+import "./HungTie.sol";
 
-abstract contract Whirl is ReentrancyGuard {
+contract Whirl is ReentrancyGuard {
 
   HungTie public hungTie;
   IERC721 internal nft;
 
   struct Auction {
-      bytes32 priceCommitment
-      bytes32 speedCommitment
-      bytes32 sellerSecretCommitment
-      uint pausedDuration
-      Bid bid
+      bytes32 priceCommitment;
+      bytes32 speedCommitment;
+      bytes32 sellerSecretCommitment;
+      uint256 pausedDuration;
+      Bid bid;
   }
 
   struct Bid {
-      bytes32 paymentCommitment
-      timestamp
+      bytes32 paymentCommitment;
+      uint256 timestamp;
       // bytes32 priceCommitment
   }
 
   struct EnoughPayload {
-      bytes proof
-      bytes32 root
+      bytes proof;
+      bytes32 root;
   }
 
   event Auction(bytes32 indexed commitment, bytes32 id, uint256 timestamp);
@@ -41,7 +44,7 @@ abstract contract Whirl is ReentrancyGuard {
   }
 
   function auction(
-    bytes32 _priceCommitment
+    bytes32 _priceCommitment,
     bytes32 _speedCommitment,
     bytes32 _sellerSecretCommitment
   ) external nonReentrant virtual;
@@ -61,13 +64,13 @@ abstract contract Whirl is ReentrancyGuard {
 
     hungTie.collect(_proof, _root, _auctions[_id].sellerSecretCommitment);
     _auctions[_id].bid = bid;
-    _auctions[_id].timestamp = ;
+    _auctions[_id].timestamp = block.timestamp;
   }
 
   function slash(
     bytes32 _id,
     bytes calldata _proof,
-    bytes32 priceCommitment
+    bytes32 priceCommitment,
     EnoughPayload _enough
   ) external nonReentrant {
     require(! hungTie.enough());
