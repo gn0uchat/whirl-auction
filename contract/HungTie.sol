@@ -1,18 +1,26 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.20;
 
 import "./MerkleTreeWithHistory.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-interface ICommitmentVerifier {
+interface IWithdrawVerifier {
+  function verifyProof(bytes memory _proof, uint256[6] memory _input) external returns (bool);
+}
+
+interface ICollectVerifier {
+  function verifyProof(bytes memory _proof, uint256[4] memory _input) external returns (bool);
+}
+
+interface IEnoughVerifier {
   function verifyProof(bytes memory _proof, uint256[3] memory _input) external returns (bool);
 }
 
 contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
 
-  ICommitmentVerifier public immutable collectVerifier;
-  ICommitmentVerifier public immutable enoughVerifier;
-  ICommitmentVerifier public immutable withdrawVerifier;
+  ICollectVerifier public immutable collectVerifier;
+  IEnoughVerifier public immutable enoughVerifier;
+  IWithdrawVerifier public immutable withdrawVerifier;
 
   mapping(bytes32 => bool) public nullifierHashes;
   // we store all commitments just to prevent accidental deposits with the same commitment
@@ -23,9 +31,9 @@ contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
   event Withdraw(address to, bytes32 nullifierHash, address indexed relayer, uint256 fee);
 
   constructor(
-    ICommitmentVerifier _collectVerifier,
-    ICommitmentVerifier _enoughVerifier,
-    ICommitmentVerifier _withdrawVerifier,
+    ICollectVerifier _collectVerifier,
+    IEnoughVerifier _enoughVerifier,
+    IWithdrawVerifier _withdrawVerifier,
     IHasher _hasher,
     uint32 _merkleTreeHeight
   ) MerkleTreeWithHistory(_merkleTreeHeight, _hasher) {
@@ -48,8 +56,8 @@ contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
     bytes calldata _proof,
     bytes32 _root,
     bytes32 _nullifierHash,
-    address payable _recipient,
-    address payable _relayer,
+    address _recipient,
+    address _relayer,
     uint256 _fee,
     uint256 _refund
   ) external payable nonReentrant {
@@ -59,31 +67,30 @@ contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
     require(
       withdrawVerifier.verifyProof(
         _proof,
-        [uint256(_root), uint256(_nullifierHash), uint256(_recipient), uint256(_relayer), _fee, _refund]
+        [uint256(_root), uint256(_nullifierHash), uint256(uint160(_recipient)), uint256(uint160(_relayer)), _fee, _refund]
       ),
       "Invalid withdraw proof"
     );
 
     nullifierHashes[_nullifierHash] = true;
-    emit Withdrawal(_recipient, _nullifierHash, _relayer, _fee);
+    emit Withdraw(_recipient, _nullifierHash, _relayer, _fee);
   }
 
   function collect(
     bytes calldata _proof,
     bytes32 _root,
-    bytes32[32] _nullifierHash,
+    bytes32[32] calldata _nullifierHash,
     bytes32 _secretCommitment
   ) external nonReentrant {
-    collectVerfifier.verifyProof(_proof, _root, nullifierHash, _secretCommitment, msg.sender);
+    //collectVerifier.verifyProof(_proof, [uint256(_root), uint256(_nullifierHash), uint256(_secretCommitment), uint256(uint160(msg.sender))]);
   }
 
   function enough(
     bytes calldata _proof,
     bytes32 _root,
     bytes32 _commitment,
-    bytes32 _thresholdCommitment,
-    bool    _isEnough
+    bytes32 _thresholdCommitment
   ) external nonReentrant returns(bool) {
-    return enoughVerifier.verifyProof(_proof, _root, _commitment, _thresholdCommitment, _isEnough);
+    return enoughVerifier.verifyProof(_proof, [uint256(_root), uint256(_commitment), uint256(_thresholdCommitment)]);
   }
 }
