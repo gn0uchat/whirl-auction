@@ -1,15 +1,19 @@
+pragma circom 2.1.4;
+
 include "../lib/merkleTree.circom";
 
 template collect(levels) {
     signal input root;
-    signal input nullifierHash[32]; 
+    signal input nullifierHash[27]; 
     signal input secretCommitment;
     signal input relayer;
 
     // signal private input nullifier;
-    signal private input secret[32];
-    signal private input amount;
-    signal private input pathElements[9][levels];
-    signal private input pathIndices[9][levels];
+    signal input secret[27]; // private
+    signal input amount; // private
+    signal input pathElements[9][levels]; // private
+    signal input pathIndices[9][levels]; // private
 }
+
+component main { public [ root, nullifierHash[27], secretCommitment, relayer ] } = collect();
 

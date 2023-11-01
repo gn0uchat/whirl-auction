@@ -9,15 +9,20 @@ interface IWithdrawVerifier {
 }
 
 interface ICollectVerifier {
-  function verifyProof(bytes memory _proof, uint256[4] memory _input) external returns (bool);
+  function verifyProof(bytes memory _proof, uint256[30] memory _input) external returns (bool);
 }
 
 interface IEnoughVerifier {
   function verifyProof(bytes memory _proof, uint256[3] memory _input) external returns (bool);
 }
 
+interface IDepositVerifier {
+  function verifyProof(bytes memory _proof, uint256[2] memory _input) external returns (bool);
+}
+
 contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
 
+  IDepositVerifier public immutable depositVerifier;
   ICollectVerifier public immutable collectVerifier;
   IEnoughVerifier public immutable enoughVerifier;
   IWithdrawVerifier public immutable withdrawVerifier;
@@ -31,20 +36,24 @@ contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
   event Withdraw(address to, bytes32 nullifierHash, address indexed relayer, uint256 fee);
 
   constructor(
+    IDepositVerifier _depositVerifier,
     ICollectVerifier _collectVerifier,
     IEnoughVerifier _enoughVerifier,
     IWithdrawVerifier _withdrawVerifier,
     IHasher _hasher,
     uint32 _merkleTreeHeight
   ) MerkleTreeWithHistory(_merkleTreeHeight, _hasher) {
+    depositVerifier = _depositVerifier;
     collectVerifier = _collectVerifier;
     enoughVerifier = _enoughVerifier;
     withdrawVerifier = _withdrawVerifier;
   }
 
-  function deposit(bytes32 _commitment) external payable nonReentrant {
+  function deposit(bytes calldata _proof, bytes32 _commitment) external payable nonReentrant {
     require(!commitments[_commitment], "The commitment has been submitted");
     require(msg.value == 0.1 ether || msg.value == 1 ether || msg.value == 10 ether, "invalid denomination");
+    uint256 amountInput = msg.value * 10 / 10 ** 18;
+    require(depositVerifier.verifyProof(_proof, [amountInput, uint256(_commitment)]), "Invalid Deposit proof");
 
     uint32 insertedIndex = _insert(_commitment);
     commitments[_commitment] = true;
@@ -76,13 +85,26 @@ contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
     emit Withdraw(_recipient, _nullifierHash, _relayer, _fee);
   }
 
+  function toUintArray(bytes32[27] memory arr_) internal pure returns (uint256[27] memory arr) {
+    assembly {
+        arr := arr_
+    }
+  }
+
   function collect(
     bytes calldata _proof,
     bytes32 _root,
-    bytes32[32] calldata _nullifierHash,
+    bytes32[27] calldata _nullifierHash,
     bytes32 _secretCommitment
   ) external nonReentrant {
-    //collectVerifier.verifyProof(_proof, [uint256(_root), uint256(_nullifierHash), uint256(_secretCommitment), uint256(uint160(msg.sender))]);
+    uint256[27] memory nullifiers = toUintArray(_nullifierHash);
+    uint256[30] memory inputs;
+    inputs[0] = uint256(_root);
+    for (uint i = 1; i < 28; i++) {
+        inputs[i] = nullifiers[i];
+    }
+    inputs[29] = uint256(_secretCommitment);
+    collectVerifier.verifyProof(_proof, inputs);
   }
 
   function enough(
