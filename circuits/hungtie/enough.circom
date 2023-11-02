@@ -15,4 +15,4 @@ template enough(levels) {
     signal input pathIndices[levels]; // private
 }
 
-component main { public [ root, commitment, thresholdCommitment ] } = Withdraw(20);
+component main { public [ root, commitment, thresholdCommitment ] } = enough(20);

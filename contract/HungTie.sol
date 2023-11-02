@@ -17,7 +17,7 @@ interface IEnoughVerifier {
 }
 
 interface IDepositVerifier {
-  function verifyProof(bytes memory _proof, uint256[2] memory _input) external returns (bool);
+  function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[2] calldata _pubSignals) external returns (bool);
 }
 
 contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
@@ -49,11 +49,11 @@ contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
     withdrawVerifier = _withdrawVerifier;
   }
 
-  function deposit(bytes calldata _proof, bytes32 _commitment) external payable nonReentrant {
+  function deposit(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, bytes32 _commitment) external payable nonReentrant {
     require(!commitments[_commitment], "The commitment has been submitted");
     require(msg.value == 0.1 ether || msg.value == 1 ether || msg.value == 10 ether, "invalid denomination");
     uint256 amountInput = msg.value * 10 / 10 ** 18;
-    require(depositVerifier.verifyProof(_proof, [amountInput, uint256(_commitment)]), "Invalid Deposit proof");
+    require(depositVerifier.verifyProof(_pA, _pB, _pC, [amountInput, uint256(_commitment)]), "Invalid Deposit proof");
 
     uint32 insertedIndex = _insert(_commitment);
     commitments[_commitment] = true;
@@ -89,6 +89,14 @@ contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
     assembly {
         arr := arr_
     }
+  }
+
+  function convert(uint256 n) public pure returns (bytes32) {
+    return bytes32(n);
+  }
+
+  function convert2(bytes32 n) public pure returns (uint256) {
+    return uint256(n);
   }
 
   function collect(
