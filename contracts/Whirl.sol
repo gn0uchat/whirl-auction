@@ -21,15 +21,16 @@ contract Whirl is ReentrancyGuard {
   struct Bid {
       bytes32 paymentCommitment;
       uint256 timestamp;
-      // bytes32 priceCommitment
   }
 
   struct EnoughPayload {
       bytes proof;
       bytes32 root;
+      bytes32 commitment;
+      bytes32 priceCommitment;
   }
 
-  event Auction(bytes32 indexed commitment, bytes32 id, uint256 timestamp);
+  event CreateAuction(bytes32 indexed commitment, bytes32 id, uint256 timestamp);
 
   mapping(bytes32 => Auction) public _auctions;
 
@@ -39,15 +40,24 @@ contract Whirl is ReentrancyGuard {
     nft = IERC721(nftAddress);
   }
 
-  function hasBid(Auction auction) internal pure returns(bool) {
-    return auction.bid != 0;
+  function hasBid(Auction memory _auction) internal pure returns(bool) {
+    return _auction.bid.timestamp != 0;
   }
 
-  function auction(
+  function createAuction(
+    bytes32 _id,
     bytes32 _priceCommitment,
     bytes32 _speedCommitment,
-    bytes32 _sellerSecretCommitment
-  ) external nonReentrant virtual;
+    bytes32 _sellerSecretCommitment,
+    uint256 pausedDuration
+  ) external nonReentrant returns(bytes32) {
+    Bid memory _bid = Bid(0x0, 0);
+    Auction memory _auction = Auction(_priceCommitment, _speedCommitment, _sellerSecretCommitment, pausedDuration, _bid);
+    _auctions[_id] = _auction;
+
+    emit CreateAuction(_sellerSecretCommitment, _id, block.timestamp);
+    return _id;
+  }
 
   function bid(
     bytes32 _id,
@@ -57,23 +67,22 @@ contract Whirl is ReentrancyGuard {
     bytes32 paymentCommitment
   ) external payable nonReentrant {
 
-    Auction auction = auctions[_id];
+    Auction storage _auction = _auctions[_id];
 
-    require(auction != 0);
-    require(! hashBid(auction));
+    require(! hasBid(_auction));
 
-    hungTie.collect(_proof, _root, _auctions[_id].sellerSecretCommitment);
-    _auctions[_id].bid = bid;
-    _auctions[_id].timestamp = block.timestamp;
+    // hungTie.collect(_proof, _root, _auction.sellerSecretCommitment);
+    Bid  memory _bid = Bid(paymentCommitment, block.timestamp);
+    _auction.bid = _bid;
   }
 
   function slash(
     bytes32 _id,
-    bytes calldata _proof,
-    bytes32 priceCommitment,
-    EnoughPayload _enough
+    EnoughPayload calldata _enough
   ) external nonReentrant {
-    require(! hungTie.enough());
+    Auction storage _auction = _auctions[_id];
+    require(! hungTie.enough(_enough.proof, _enough.root, _enough.commitment, _enough.priceCommitment));
+    _auction.bid = Bid(0x0, 0);
     // do slash ...
   }
 
@@ -86,7 +95,9 @@ contract Whirl is ReentrancyGuard {
     uint256 _fee,
     uint256 _refund
   ) external payable nonReentrant {
-    // withdraw if pass time limit ...
+    Auction memory _auction = _auctions[_id];
+    require(_auction.bid.timestamp != 0);
+    require(block.timestamp >= _auction.bid.timestamp + _auction.pausedDuration);
     nft.safeTransferFrom(address(this), msg.sender, nftId);
   }
 }
