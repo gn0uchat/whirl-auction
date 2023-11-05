@@ -1,5 +1,5 @@
 {
-  "name": "circom2",
+  "name": "whirl-auction",
   "version": "1.0.0",
   "description": "circom samples",
   "main": "index.js",
@@ -9,7 +9,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "20": "^3.1.9",
     "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gn0uchat/whirl-auction.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gn0uchat/whirl-auction/issues"
+  },
+  "homepage": "https://github.com/gn0uchat/whirl-auction#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "hardhat": "^2.19.0"
   }
 }
