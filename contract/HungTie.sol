@@ -102,16 +102,16 @@ contract HungTie is MerkleTreeWithHistory, ReentrancyGuard {
   function collect(
     bytes calldata _proof,
     bytes32 _root,
-    bytes32[27] calldata _nullifierHash,
-    bytes32 _secretCommitment
+    bytes32[27] calldata _secretCommitment,
+    bytes32 calldata _newCommitment,
   ) external nonReentrant {
-    uint256[27] memory nullifiers = toUintArray(_nullifierHash);
-    uint256[30] memory inputs;
+    uint256[27] memory commitments = toUintArray(_secretCommitment);
+    uint256[29] memory inputs;
     inputs[0] = uint256(_root);
     for (uint i = 1; i < 28; i++) {
-        inputs[i] = nullifiers[i];
+        inputs[i] = commitments[i];
     }
-    inputs[29] = uint256(_secretCommitment);
+    inputs[29] = uint256(_newCommitment);
     collectVerifier.verifyProof(_proof, inputs);
   }
 
