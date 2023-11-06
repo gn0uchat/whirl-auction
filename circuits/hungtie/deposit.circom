@@ -4,8 +4,8 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/pedersen.circom";
 
 template deposit() {
-    signal input amount;
-    signal input commitment;
+    signal input amount; // secret
+    signal input commitment; // leaf = hash(amount | recipientSecretHash | 0)
 
     signal input secret; // private
 

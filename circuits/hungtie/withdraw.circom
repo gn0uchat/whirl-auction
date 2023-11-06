@@ -33,12 +33,13 @@ template Withdraw(levels) {
     //signal input nullifierHash;
     signal input recipient; // not taking part in any computations
     signal input relayer;  // not taking part in any computations
-    signal input fee;      // not taking part in any computations
-    signal input refund;   // not taking part in any computations
+    // signal input fee;      // not taking part in any computations
+    // signal input refund;   // not taking part in any computations
     
     signal input nullifier; // private
     signal input secret; // private
-    signal input amount; 
+    signal input amount; // private
+    signal input semaphoreSecret; // private == 0 if units
     signal input pathElements[levels]; // private
     signal input pathIndices[levels]; // private
 

@@ -11,16 +11,17 @@ contract Whirl is ReentrancyGuard {
   IERC721 internal nft;
 
   struct Auction {
-      bytes32 priceCommitment;
-      bytes32 speedCommitment;
-      bytes32 sellerSecretCommitment;
-      uint256 pausedDuration;
+      bytes32 priceCommitment;        // hash(init_price | secret)
+      bytes32 speedCommitment;        // hash(dec_speed | secret)
+      bytes32 paymentSecretCommitment;// hash(secret)
+      uint256 initBlockNumber;
+      uint256 pausedDuration;         // blocks
       Bid bid;
   }
 
   struct Bid {
       bytes32 paymentCommitment;
-      uint256 timestamp;
+      uint256 blockNumber;
   }
 
   struct EnoughPayload {
