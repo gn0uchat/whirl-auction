@@ -27,7 +27,7 @@ contract Whirl is ReentrancyGuard {
       bytes proof;
       bytes32 root;
       bytes32 commitment;
-      bytes32 priceCommitment;
+      bytes32 thresholdCommitment;
   }
 
   event CreateAuction(bytes32 indexed commitment, bytes32 id, uint256 timestamp);
@@ -81,7 +81,7 @@ contract Whirl is ReentrancyGuard {
     EnoughPayload calldata _enough
   ) external nonReentrant {
     Auction storage _auction = _auctions[_id];
-    require(! hungTie.enough(_enough.proof, _enough.root, _enough.commitment, _enough.priceCommitment));
+    require(! hungTie.enough(_enough.proof, _enough.root, _enough.commitment, _enough.thresholdCommitment));
     _auction.bid = Bid(0x0, 0);
     // do slash ...
   }
